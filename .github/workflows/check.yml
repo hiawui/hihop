@@ -1,0 +1,21 @@
+name: check
+on: [push, pull_request]
+jobs:
+  check:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v3
+      - run: mise run setup
+      - run: mise run check
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v3
+      - run: mise run setup
+      - run: docker pull --platform linux/amd64 v2fly/v2fly-core@sha256:fc3df0da123b82d473d5251ece521cfdfa18ac70abd4da9bde4f120c3e17dc82
+      - run: mise run test:integration

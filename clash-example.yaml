@@ -1,0 +1,112 @@
+# Clash 示例配置。节点地址、密码和 UUID 均为占位值，使用前请替换。
+# 规则从上到下匹配；本文件只展示常见写法，不包含原配置的完整规则库。
+port: 7890
+socks-port: 7891
+allow-lan: false
+mode: Rule
+log-level: info
+external-controller: 127.0.0.1:9090
+unified-delay: true
+
+hosts:
+  example.local: 127.0.0.1
+
+dns:
+  enable: true
+  use-hosts: true
+  default-nameserver:
+    - 119.29.29.29
+    - 223.5.5.5
+    - tls://1.12.12.12
+  nameserver:
+    - 223.5.5.5
+    - tls://dot.pub
+    - tls://1.1.1.1
+  nameserver-policy:
+    '+.example.com': tcp://dns.example.com:8080
+
+proxies:
+  - {name: 示例 SS 节点, server: ss.example.com, port: 8388, type: ss, cipher: aes-256-gcm, password: replace-with-password, udp: true}
+  - {name: 示例 VMess TCP 节点, server: vmess.example.com, port: 443, type: vmess, uuid: 00000000-0000-4000-8000-000000000000, alterId: 0, cipher: auto, tls: true, skip-cert-verify: false, udp: true}
+  # 非零 alterId 是旧式配置示例，是否支持取决于客户端和服务端。
+  - {name: 示例 VMess WS 节点, server: ws.example.com, port: 8080, type: vmess, uuid: 00000000-0000-4000-8000-000000000000, alterId: 1, cipher: auto, tls: false, skip-cert-verify: false, network: ws, ws-opts: {path: /example, headers: {Host: ws.example.com}}, udp: true}
+
+proxy-groups:
+  - name: 选择节点
+    type: select
+    proxies:
+      - 示例 SS 节点
+      - 示例 VMess TCP 节点
+      - 示例 VMess WS 节点
+      - DIRECT
+  - name: 视频网站
+    type: select
+    proxies:
+      - DIRECT
+      - 选择节点
+  - name: 动画疯
+    type: select
+    proxies:
+      - 选择节点
+      - DIRECT
+  - name: Steam 登录和下载
+    type: select
+    proxies:
+      - DIRECT
+      - 选择节点
+  - name: Steam 商店和社区
+    type: select
+    proxies:
+      - 选择节点
+      - DIRECT
+  - name: Cloudflare
+    type: select
+    proxies:
+      - 选择节点
+      - DIRECT
+  - name: OneDrive
+    type: select
+    proxies:
+      - 选择节点
+      - DIRECT
+  - name: 学术网站
+    type: select
+    proxies:
+      - DIRECT
+      - 选择节点
+  - name: 国内网站
+    type: select
+    proxies:
+      - DIRECT
+      - 选择节点
+  - name: 拦截广告
+    type: select
+    proxies:
+      - REJECT
+      - DIRECT
+      - 选择节点
+  - name: 漏网之鱼
+    type: select
+    proxies:
+      - 选择节点
+      - DIRECT
+
+rules:
+  # 精确域名和域名后缀
+  - DOMAIN,app.biliapi.net,视频网站
+  - DOMAIN-SUFFIX,bilibili.com,视频网站
+  - DOMAIN-SUFFIX,gamer.com.tw,动画疯
+  - DOMAIN-SUFFIX,steamcontent.com,Steam 登录和下载
+  - DOMAIN-SUFFIX,steampowered.com,Steam 商店和社区
+  - DOMAIN-SUFFIX,cloudflare.com,Cloudflare
+  - DOMAIN-SUFFIX,onedrive.live.com,OneDrive
+  - DOMAIN-SUFFIX,example.edu,学术网站
+  - DOMAIN-SUFFIX,ads.example.com,拦截广告
+  # 域名关键词和目标端口
+  - DOMAIN-KEYWORD,steampipe,Steam 登录和下载
+  - DST-PORT,25,DIRECT
+  # IPv4 / IPv6 网段；no-resolve 表示不为此规则额外解析域名
+  - IP-CIDR,192.0.2.0/24,选择节点,no-resolve
+  - IP-CIDR6,2001:db8::/32,选择节点,no-resolve
+  - GEOIP,CN,国内网站
+  - MATCH,漏网之鱼

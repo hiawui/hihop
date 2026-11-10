@@ -1,0 +1,23 @@
+[tools]
+node = "24.22.2"
+"npm:pnpm" = "11.28.5"
+
+[tasks.setup]
+run = "pnpm install --frozen-lockfile"
+[tasks.dev]
+run = "pnpm run dev"
+[tasks.typecheck]
+run = "pnpm run typecheck"
+[tasks.test]
+run = "pnpm test"
+[tasks."test:integration"]
+run = "pnpm run test:integration"
+[tasks.build]
+run = "pnpm run build"
+[tasks.check]
+run = "pnpm run check"
+[tasks.start]
+run = "pnpm start"
+
+[tasks."install:launcher"]
+run = "pnpm run install:launcher"
